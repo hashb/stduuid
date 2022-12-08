@@ -381,6 +381,7 @@ namespace uuids
              class Traits = std::char_traits<CharT>,
              class Allocator = std::allocator<CharT>>
    std::basic_string<CharT, Traits, Allocator> to_string(uuid const &id);
+   std::string to_bytes(uuid const& id);
 
    // --------------------------------------------------------------------------------------------------------------------------
    // uuid class
@@ -546,6 +547,21 @@ namespace uuids
          return uuid{ data };
       }
 
+      template <typename StringType>
+      [[nodiscard]] constexpr static std::optional<uuid> from_bytes(StringType const & in_str) noexcept
+      {
+         auto str = detail::to_string_view(in_str);
+
+         std::array<uint8_t, 16> data{ { 0 } };
+
+         if (str.empty() || str.size() != 16) return {};
+
+         for (size_t i = 0; i < str.size(); i++)
+            data[i] = str[i];
+
+         return uuid{ data };
+      }
+
    private:
       std::array<value_type, 16> data{ { 0 } };
 
@@ -557,6 +573,7 @@ namespace uuids
 
       template<class CharT, class Traits, class Allocator>
       friend std::basic_string<CharT, Traits, Allocator> to_string(uuid const& id);
+      friend std::string to_bytes(uuid const& id);
 
       friend std::hash<uuid>;
    };
@@ -598,6 +615,12 @@ namespace uuids
          index++;
       }
 
+      return uustr;
+   }
+
+   [[nodiscard]] inline std::string to_bytes(uuid const & id)
+   {
+      std::string uustr(id.data.begin(), id.data.end()); ;
       return uustr;
    }
 
